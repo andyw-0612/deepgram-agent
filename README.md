@@ -61,7 +61,7 @@ For API errors:
 
 ## License
 
-MIT
+[MIT](https://github.com/andyw-0612/deepgram-agent/blob/main/LICENSE)
 
 ## Acknowledgments
 - [Deepgram](https://deepgram.com/) for speech-to-text and text-to-speech
