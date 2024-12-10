@@ -5,3 +5,4 @@ numpy
 deepgram-sdk
 groq
 asyncio
+pyaudio

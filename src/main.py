@@ -84,7 +84,7 @@ class LiveTranscriptionSystem:
             channels=1,
             sample_rate=16000,
             interim_results=True,
-            utterance_end_ms="2000",
+            utterance_end_ms="1000",
             vad_events=True,
             endpointing=500,
         )

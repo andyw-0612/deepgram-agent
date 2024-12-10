@@ -11,7 +11,9 @@ class GroqLLM:
         # initialize groq client and conversation history
         self.client = Groq(api_key=api_key)
         self.conversation_history = []
+        self.model = "llama-3.2-3b-preview"
         print_debug("SYSTEM", "Groq LLM initialized")
+        print_debug("SYSTEM", f"Using LLM: {self.model}")
 
     async def generate_response(self, text: str) -> str:
         """
@@ -26,7 +28,7 @@ class GroqLLM:
             # generate response using groq api
             completion = await asyncio.to_thread(
                 self.client.chat.completions.create,
-                model="llama-3.2-3b-preview",
+                model=self.model,
                 messages=self.conversation_history,
                 temperature=1,
                 max_tokens=1024,

@@ -38,11 +38,10 @@ class AudioPlayer:
             try:
                 # create temporary file for current segment
                 temp_file = os.path.join(self.temp_dir, f"temp_{i}.mp3")
-                print_debug("DEBUG", f"Starting segment {i+1}/{len(segments)}")
 
                 # generate audio using deepgram
                 text_formatted = {"text": segment}
-                options = SpeakOptions(model="aura-asteria-en")
+                options = SpeakOptions(model="aura-orion-en")
                 await self.deepgram.speak.asyncrest.v("1").save(temp_file, text_formatted, options)
 
                 # play audio segment
