@@ -8,25 +8,50 @@ from utils import print_debug
 
 class AudioPlayer:
     """
-    handles text-to-speech synthesis and audio playback using deepgram's api
-    includes support for interrupting ongoing playback
+    Handles text-to-speech synthesis and audio playback using Deepgram's API
+    Includes support for interrupting ongoing playback
     """
     def __init__(self, api_key: str):
-        # initialize deepgram client and playback state
+        # Initialize Deepgram client and playback state
         self.deepgram = DeepgramClient(api_key)
         self.is_playing = False
         self.stop_current_playback = False
-        # create temporary directory for audio files
+        # Create temporary directory for audio files
         self.temp_dir = tempfile.mkdtemp()
         print_debug("SYSTEM", "Audio player initialized")
 
+    def split_text_by_length(self, text: str, max_length: int = 2000) -> list:
+        """
+        Split text into chunks not exceeding max_length characters,
+        ensuring splits occur at sentence boundaries
+        """
+        # Find all sentences
+        sentences = re.findall(r"[^.!?]+[.!?]", text)
+        chunks = []
+        current_chunk = ""
+
+        for sentence in sentences:
+            # If adding this sentence would exceed max_length,
+            # save current chunk and start a new one
+            if len(current_chunk) + len(sentence) > max_length and current_chunk:
+                chunks.append(current_chunk.strip())
+                current_chunk = sentence
+            else:
+                current_chunk += sentence
+
+        # Add the last chunk if it's not empty
+        if current_chunk:
+            chunks.append(current_chunk.strip())
+
+        return chunks
+
     async def synthesize_and_play(self, text: str) -> None:
         """
-        convert text to speech and play audio segments sequentially
-        handles interruption between segments
+        Convert text to speech and play audio segments sequentially
+        Handles interruption between segments
         """
-        # split text into sentence segments for smoother playback
-        segments = re.findall(r"[^.!?]+[.!?]", text)
+        # Split text into chunks of maximum 2000 characters
+        segments = self.split_text_by_length(text)
         print_debug("DEBUG", f"Segmented text into {len(segments)} segments")
 
         for i, segment in enumerate(segments):
@@ -36,27 +61,23 @@ class AudioPlayer:
 
             temp_file = None
             try:
-                # create temporary file for current segment
+                # Create temporary file for current segment
                 temp_file = os.path.join(self.temp_dir, f"temp_{i}.mp3")
-
-                # generate audio using deepgram
+                # Generate audio using Deepgram
                 text_formatted = {"text": segment}
-                options = SpeakOptions(model="aura-orion-en")
+                options = SpeakOptions(model="aura-luna-en")
                 await self.deepgram.speak.asyncrest.v("1").save(temp_file, text_formatted, options)
-
-                # play audio segment
+                # Play audio segment
                 data, samplerate = sf.read(temp_file)
                 self.is_playing = True
                 sd.play(data, samplerate, blocksize=128)
-
-                # wait for playback to complete or interruption
+                # Wait for playback to complete or interruption
                 while sd.get_stream().active and not self.stop_current_playback:
                     sd.sleep(50)
-
             except Exception as e:
                 print_debug("SYSTEM", f"Error with audio: {e}")
             finally:
-                # cleanup and reset state
+                # Cleanup and reset state
                 self.is_playing = False
                 if temp_file and os.path.exists(temp_file):
                     os.remove(temp_file)
@@ -66,7 +87,7 @@ class AudioPlayer:
 
     def stop_playback(self):
         """
-        stop current audio playback if playing
+        Stop current audio playback if playing
         """
         if self.is_playing:
             self.stop_current_playback = True

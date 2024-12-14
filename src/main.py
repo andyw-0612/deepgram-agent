@@ -86,7 +86,7 @@ class LiveTranscriptionSystem:
             interim_results=True,
             utterance_end_ms="1000",
             vad_events=True,
-            endpointing=500,
+            endpointing=750,
         )
 
         return dg_connection, options
